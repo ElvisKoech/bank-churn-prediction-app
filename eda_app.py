@@ -1,82 +1,100 @@
-from numpy import dtype
-import streamlit as st 
-import pandas as pd 
-
-dataFrameSerialization = "legacy"
-
-# Data Viz Pkgs
-import matplotlib.pyplot as plt 
-import matplotlib
-matplotlib.use('Agg')
-import seaborn as sns
-import plotly.express as px 
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
 
-@st.cache
+# Load data function
+@st.cache_data
 def load_data(data):
-	df = pd.read_csv(data)
-	return df
+    df = pd.read_csv(data)
+    return df
 
 
 def run_eda_app():
-	st.subheader("EDA Section")
-	df = load_data("data/bank_data_customer_churn.csv")
-	df_clean = load_data("data/bank_data_customer_churn_clean.csv")
-	
+    st.title("Exploratory Data Analysis")
+    st.subheader("Bank Customer Churn Dataset")
 
-	submenu = st.sidebar.selectbox("SubMenu",["Descriptive","Plots"])
-	if submenu == "Descriptive":
-		st.dataframe(df)
-		
-		with st.expander("Descriptive Summary"):
-			st.dataframe(df_clean.describe())
+    # Load the dataset
+    df = load_data("data/bank_data_customer_churn.csv")
 
-		with st.expander("Gender Distribution"):
-			st.dataframe(df['Gender'].value_counts())
+    # Sidebar menu for selection
+    st.sidebar.title("Explore")
+    menu = st.sidebar.radio("Select an option", ["Overview", "Descriptive", "Visualizations"])
 
-		with st.expander("Target Distribution"):
-			st.dataframe(df['Exited'].value_counts())
-		with st.expander("Checking for Missing values"):
-			st.dataframe(df.isnull().sum())
-	
-	
-	else:
-		st.subheader("Plots")
-		# Layouts
-		col1,col2 = st.columns([2,1])
-		with col1:
-			with st.expander("Dist Plot of Gender"):
+    if menu == "Overview":
+        st.write(
+            """
+            This is an exploratory data analysis application for a bank customer churn dataset. 
+            You can use the sidebar to navigate through the different sections of this application. 
+            """
+        )
 
-				#fig = plt.figure()
-				#sns.countplot(df['Gender'])
-				#st.pyplot(fig)
+    elif menu == "Descriptive":
+        # Display the dataset
+        st.subheader("Descriptive Summary")
+        st.dataframe(df.describe())
 
-				gen_df = df['Gender'].value_counts().to_frame()
-				gen_df = gen_df.reset_index()
-				gen_df.columns = ['Gender Type','Counts']
-				# st.dataframe(gen_df)
-				p01 = px.pie(gen_df,names='Gender Type',values='Counts')
-				st.plotly_chart(p01,use_container_width=True)
+        # Display gender distribution
+        st.subheader("Gender Distribution")
+        gender_df = df["Gender"].value_counts().reset_index()
+        gender_df.columns = ["Gender", "Count"]
+        st.dataframe(gender_df)
 
-		
-		with col2:
-			with st.expander("Dist Plot of Exited"):
+        # Display target distribution
+        st.subheader("Target Distribution")
+        target_df = df["Exited"].value_counts().reset_index()
+        target_df.columns = ["Exited", "Count"]
+        st.dataframe(target_df)
 
-				#fig = plt.figure()
-				#sns.countplot(df['Gender'])
-				#st.pyplot(fig)
+        # Check for missing values
+        st.subheader("Missing Values")
+        missing_df = df.isnull().sum().reset_index()
+        missing_df.columns = ["Feature", "Missing Count"]
+        st.dataframe(missing_df)
 
-				gen_df1 = df['Exited'].value_counts().to_frame()
-				gen_df1 = gen_df1.reset_index()
-				gen_df1.columns = ['Exited Type','Counts']
-				# st.dataframe(gen_df)
-				p02 = px.pie(gen_df1,names='Exited Type',values='Counts')
-				st.plotly_chart(p02,use_container_width=True)
+    else:
+        # Plot gender distribution
+        st.subheader("Gender Distribution")
+        gender_df = df["Gender"].value_counts().reset_index()
+        gender_df.columns = ["Gender", "Count"]
+        fig1 = px.pie(gender_df, names="Gender", values="Count", color="Gender", hole=0.6)
+        st.plotly_chart(fig1, use_container_width=True)
 
-	
+        # Plot target distribution
+        st.subheader("Target Distribution")
+        target_df = df["Exited"].value_counts().reset_index()
+        target_df.columns = ["Exited", "Count"]
+        fig2 = px.pie(target_df, names="Exited", values="Count", color="Exited", hole=0.6)
+        st.plotly_chart(fig2, use_container_width=True)
 
+        # Display Correlation Heatmap
+        st.subheader("Correlation Matrix")
+        fig3 = px.imshow(df.corr(numeric_only=True))
+        fig3.update_layout(
+            title={
+                "text": "Correlation Heatmap",
+                "xanchor": "center",
+                "yanchor": "top",
+                "x": 0.5,
+            },
+            xaxis={"title": "Features"},
+            yaxis={"title": "Features"},
+        )
+        st.plotly_chart(fig3, use_container_width=True)
 
-	    
+        # Display Pairplot
+        st.subheader("Pairplot")
+        fig4 = px.scatter_matrix(
+            df,
+            dimensions=df.columns[:-1],
+            color="Exited",
+            symbol="Gender",
+            title="Pairplot",
+        )
+        fig4.update_layout(height=700, width=700)
+        st.plotly_chart(fig4, use_container_width=True)
+
 
 
 		

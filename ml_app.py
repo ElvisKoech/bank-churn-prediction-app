@@ -4,40 +4,57 @@ import os
 import numpy as np
 
 
+# Define label dictionaries and feature maps
+label_dict = {"No": 0, "Yes": 1}
+gender_map = {"Female": 0, "Male": 1}
+target_label_map = {"No Churn": 0, "Churn": 1}
+geography_label_map = {"France": 0, "Spain": 1, "Germany": 2}
+
+# Define attribute information and instructions for input fields
 attrib_info = """
 #### Attribute Information:                    
- - CreditScore 1.350-850     
+ - CreditScore (range: 350-850)    
  - Geography          
- - Gender 0.Female, 1.Male         
- - Age   1.18-92             
- - Tenure             
- - Balance            
- - NumOfProducts      
- - HasCrCard   0.No, 1.Yes    
- - IsActiveMember 0.No, 1.Yes   
- - EstimatedSalary    
- - Exited 0.No Churn, 1.Churn
+ - Gender          
+ - Age (range: 18-92)             
+ - Tenure (range: 0-10)             
+ - Balance (range: 0-300,000)            
+ - NumOfProducts (range: 1-5)      
+ - HasCrCard          
+ - IsActiveMember   
+ - EstimatedSalary (range: 10-200,000)
 """
-label_dict = {"No":0,"Yes":1}
-gender_map = {"Female":0,"Male":1}
-target_label_map = {"No Churn":0,"Churn":1}
-Geography_label_map = {"France":0,"Spain":1,"Germany":2}
+instructions = {
+    "CreditScore": "Enter your credit score (between 350 and 850).",
+    "Geography": "Select the country where you live.",
+    "Gender": "Select your gender.",
+    "Age": "Enter your age (between 18 and 92).",
+    "Tenure": "Enter the number of years you have been a customer (between 0 and 10).",
+    "Balance": "Enter your bank balance (between 0 and 300,000).",
+    "NumOfProducts": "Enter the number of bank products you have (between 1 and 5).",
+    "HasCrCard": "Select whether you have a credit card or not.",
+    "IsActiveMember": "Select whether you are an active member of the bank or not.",
+    "EstimatedSalary": "Enter your estimated salary (between 10 and 200,000)."
+}
 
+
+@st.cache_resource
+def load_model(model_file_lr):
+    loaded_model = joblib.load(open(os.path.join(model_file_lr),"rb"))
+    return loaded_model
+
+
+# Define helper functions for encoding categorical values
 def get_fvalue(val):
-	feature_dict = {"No":0,"Yes":1}
-	for key,value in feature_dict.items():
-		if val == key:
-			return value 
+    feature_dict = {"No":0,"Yes":1}
+    for key,value in feature_dict.items():
+        if val == key:
+            return value 
 
 def get_value(val,my_dict):
-	for key,value in my_dict.items():
-		if val == key:
-			return value 
-
-@st.cache
-def load_model(model_file_lr):
-	loaded_model = joblib.load(open(os.path.join(model_file_lr),"rb"))
-	return loaded_model
+    for key,value in my_dict.items():
+        if val == key:
+            return value 
 
 def run_ml_app():
 	st.subheader("Machine Learning Section")
@@ -79,7 +96,7 @@ def run_ml_app():
 				res = get_value(i,gender_map)
 				encoded_result.append(res)
 			elif i in ["France","Spain","Germany"]:
-				res1 = get_value(i,Geography_label_map)
+				res1 = get_value(i, geography_label_map)
 				encoded_result.append(res1)
 			else:
 				encoded_result.append(get_fvalue(i))
@@ -109,13 +126,3 @@ def run_ml_app():
 			pred_probability_score = {"No Churn Probability Score":pred_prob[0][0]*100,"Churn Probability Score":pred_prob[0][1]*100}
 			st.subheader("Prediction Probability Score")
 			st.json(pred_probability_score)
-
-    
-
-    		
-
-
-
-
-
-    
