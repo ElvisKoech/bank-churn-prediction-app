@@ -4,7 +4,7 @@ setup.sh
 procfile
 requirement.txt
 + App: 
-[Bank Churn Prediction Data App](https://bank-churn-prediction-data-app.herokuapp.com/)
+[Bank Churn Prediction Data App](https://elviskoech-bank-churn-prediction-app-main-y0c4q1.streamlit.app/)
 
 ## Project Outline
 + Problem Statement
